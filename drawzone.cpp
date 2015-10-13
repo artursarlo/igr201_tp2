@@ -8,6 +8,8 @@ DrawZone::DrawZone(QWidget *parent) :
     connect(parent, SIGNAL(color_pen_changed(int)), this, SLOT(set_pen_color(int)));
     connect(parent, SIGNAL(style_pen_changed(int)), this, SLOT(set_pen_style(int)));
     connect(parent, SIGNAL(form_painter_changed(int)), this, SLOT(set_figure_form(int)));
+    draw_mode = 1;
+    figure_form = 0;
 }
 
 void DrawZone::paintEvent(QPaintEvent* e) {

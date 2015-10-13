@@ -166,6 +166,7 @@ void MainWindow::openFile(){
         std::cout << "Successfull append" << std::endl;
     }
     mydrawzone->load_figures(content);
+    update();
     std::cout << "Open File Request for path: " << qPrintable(fileName) << std::endl;
 }
 
