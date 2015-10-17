@@ -151,7 +151,7 @@ MainWindow::MainWindow(QWidget *parent) :
 void MainWindow::openFile(){
     QString fileName = QFileDialog::getOpenFileName( this, tr("Open File"), "/cal/homes/aandrade/Downloads/IGR201/tp2_qt/tp2_qt/icons/images", tr("Text Files (*.txt)"));
     QFile file(fileName);
-    file.open(QIODevice::ReadOnly | QIODevice::Text);
+    file.open(QIODevice::ReadOnly);
     QDataStream stream(&file);
     QList<figuredraw> content;
     int k;
@@ -160,8 +160,8 @@ void MainWindow::openFile(){
         figuredraw new_figure;
         QPen pen;
         QPainterPath path;
-        stream >> pen;
-        stream >> path;
+        stream >> pen >> path;
+//        stream >> path;
         new_figure.usedpen = pen;
         new_figure.usedpath = path;
         new_figure.being_edited = 0;
@@ -178,7 +178,7 @@ void MainWindow::saveFile(){
     QString filter = tr("Text Files (*.txt)");
     QString fileName = QFileDialog::getSaveFileName(this, tr("Save File"), "/cal/homes/aandrade/Downloads/IGR201/tp2_qt/tp2_qt/icons/images", filter, &filter);
     QFile file(fileName);
-    file.open(QIODevice::WriteOnly | QIODevice::Text);
+    file.open(QIODevice::WriteOnly);
     QDataStream stream(&file);
     QList<figuredraw> *save_adress;
     int save_size;
