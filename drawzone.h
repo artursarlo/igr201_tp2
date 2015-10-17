@@ -6,6 +6,11 @@
 #include <QMouseEvent>
 #include <QLabel>
 #include <iostream>
+typedef struct{
+    QPen usedpen;
+    QPainterPath usedpath;
+    int being_edited;
+}figuredraw;
 
 class DrawZone : public QWidget
 {
@@ -13,12 +18,6 @@ class DrawZone : public QWidget
 public:
     explicit DrawZone(QWidget *parent = 0);
     QPen copy_pen;
-
-    typedef struct{
-        QPen usedpen;
-        QPainterPath usedpath;
-    }figuredraw;
-
     void get_save_cord(QList<figuredraw> **adress, int *n_figures);
     void load_figures(QList<figuredraw> adress);
 
@@ -47,6 +46,7 @@ public slots:
     void set_figure_form(int new_form);
     void set_draw_mode_paint();
     void set_draw_mode_edit();
+    void set_draw_mode_move();
 };
 
 #endif // DRAWZONE_H

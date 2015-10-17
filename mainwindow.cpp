@@ -36,6 +36,7 @@ MainWindow::MainWindow(QWidget *parent) :
     QAction * quitAction = new QAction( QIcon(":/icons/quit.png"), tr("&Quit"), this);
     QAction * paintAction = new QAction( QIcon(":/icons/paint.png"), tr("&Paint"), this);
     QAction * editAction = new QAction( QIcon(":/icons/edit.png"), tr("&Edit"), this);
+    QAction * moveAction = new QAction( QIcon(":/icons/move.png"), tr("&Edit"), this);
 
     QActionGroup *group_color = new QActionGroup(this);
     connect(group_color, SIGNAL(triggered(QAction *)), this, SLOT(doIt(QAction *)));
@@ -85,6 +86,7 @@ MainWindow::MainWindow(QWidget *parent) :
     quitAction->setShortcut( tr("Ctrl+Q"));
     paintAction->setShortcut( tr("Ctrl+P"));
     editAction->setShortcut( tr("Ctrl+E"));
+    moveAction->setShortcut( tr("Ctrl+M"));
 
     set_pen_color->setShortcut( tr("Ctrl+C"));
     set_pen_style->setShortcut( tr("Ctrl+Space"));
@@ -127,6 +129,7 @@ MainWindow::MainWindow(QWidget *parent) :
     toolbar->addAction(quitAction);
     toolbar->addAction(paintAction);
     toolbar->addAction(editAction);
+    toolbar->addAction(moveAction);
 
     //Link Actions to Slots
     connect(openAction, SIGNAL(triggered( )), this, SLOT(openFile()));
@@ -134,7 +137,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(quitAction, SIGNAL(triggered( )), this, SLOT(quitApp()));
     connect(paintAction, SIGNAL(triggered( )), mydrawzone, SLOT(set_draw_mode_paint()));
     connect(editAction, SIGNAL(triggered( )), mydrawzone, SLOT(set_draw_mode_edit()));
-
+    connect(moveAction, SIGNAL(triggered( )), mydrawzone, SLOT(set_draw_mode_move()));
 
     connect(set_pen_color, SIGNAL(triggered( )), mydrawzone, SLOT(set_pen_color()));
     connect(set_pen_width_larger, SIGNAL(triggered( )), mydrawzone, SLOT(set_pen_width_larger()));
@@ -150,17 +153,18 @@ void MainWindow::openFile(){
     QFile file(fileName);
     file.open(QIODevice::ReadOnly | QIODevice::Text);
     QDataStream stream(&file);
-    QList<DrawZone::figuredraw> content;
+    QList<figuredraw> content;
     int k;
     stream >> k;
     for(int i= 0; i<k; i++){
-        DrawZone::figuredraw new_figure;
+        figuredraw new_figure;
         QPen pen;
         QPainterPath path;
         stream >> pen;
         stream >> path;
         new_figure.usedpen = pen;
         new_figure.usedpath = path;
+        new_figure.being_edited = 0;
         std::cout << "Read one line" << std::endl;
         content.append(new_figure);
         std::cout << "Successfull append" << std::endl;
@@ -176,12 +180,12 @@ void MainWindow::saveFile(){
     QFile file(fileName);
     file.open(QIODevice::WriteOnly | QIODevice::Text);
     QDataStream stream(&file);
-    QList<DrawZone::figuredraw> *save_adress;
+    QList<figuredraw> *save_adress;
     int save_size;
     mydrawzone->get_save_cord(&save_adress, &save_size);
     stream << save_size;
     for (int k = 0; k< save_size; k++){
-        DrawZone::figuredraw new_figure = save_adress->at(k);
+        figuredraw new_figure = save_adress->at(k);
         stream << new_figure.usedpen;
         stream << new_figure.usedpath;
     }

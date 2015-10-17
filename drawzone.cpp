@@ -23,7 +23,8 @@ void DrawZone::paintEvent(QPaintEvent* e) {
         }
     }
 
-    if (draw_mode){
+    switch (draw_mode){
+    case 1:
         painter.setPen(copy_pen);
         if(ismoving){
             switch(figure_form){
@@ -37,49 +38,67 @@ void DrawZone::paintEvent(QPaintEvent* e) {
                 painter.drawEllipse(xi, yi, xf-xi, yf-yi);
             }
         }
-    }
-    else{
+    break;
+    case 0:
         QPen edit_pen;
         edit_pen.setStyle(Qt::DashLine);
         painter.setPen(edit_pen);
         if(ismoving)
             painter.drawRect(xi, yi, xf-xi, yf-yi);
+        break;
     }
 }
 
 void DrawZone::mouseReleaseEvent(QMouseEvent* e){
     if (e->button() == Qt::LeftButton){
         std::cout << "LeftButtonReleased!" << std::endl;
-        if(draw_mode){
+        if(draw_mode == 1){
             QPainterPath path;
             figuredraw newline;
             switch(figure_form){
             case 0:
                 path.moveTo(xi, yi);
                 path.lineTo(xf, yf);
-                path.closeSubpath();
+//                path.closeSubpath();
                 newline.usedpath = path;
                 newline.usedpen = copy_pen;
+                newline.being_edited = 0;
                 figures->append(newline);
                 break;
             case 1:
                 path.addRect(xi,yi, xf-xi, yf-yi);
-                path.closeSubpath();
+//                path.closeSubpath();
                 newline.usedpath = path;
                 newline.usedpen = copy_pen;
+                newline.being_edited = 0;
                 figures->append(newline);
                 break;
             case 2:
+//                path.moveTo(xf, yi + (yf-yi)/2.0);
+//                path.arcTo(xi, yi, xf-xi, yf-yi, 0.0, 360.0);
                 path.addEllipse(xi,yi, xf-xi, yf-yi);
-                path.closeSubpath();
+//                path.closeSubpath();
+//                path.addEllipse(QRect(xi,yi, xf-xi, yf-yi));
                 newline.usedpath = path;
                 newline.usedpen = copy_pen;
+                newline.being_edited = 0;
                 figures->append(newline);
                 break;
             }
         }
-        else{
+        else if (draw_mode == 0){
             select_area.setRect(xi,yi, xf-xi, yf-yi);
+            if (!figures->isEmpty()){
+                            for (int i=0; i<figures->length(); i++){
+                                int *changing_being_edited = (int *) &figures->at(i).being_edited;
+                                if (figures->at(i).usedpath.intersects(select_area)){
+                                    *changing_being_edited = 1;
+                                }
+                                else{
+                                    *changing_being_edited = 0;
+                                }
+                            }
+            }
         }
         ismoving = 0;
         update();
@@ -99,6 +118,21 @@ void DrawZone::mouseMoveEvent(QMouseEvent* e){
     if (ismoving){
         xf = e->pos().x();
         yf = e->pos().y();
+        if (draw_mode == 2){
+            if (!figures->isEmpty()){
+                for (int i=0; i<figures->length(); i++){
+                    if (figures->at(i).being_edited){
+                        QPainterPath *changing_path = (QPainterPath *) &figures->at(i).usedpath;
+                        changing_path->translate(xf-xi, yf-yi);
+
+                    }
+                }
+                select_area.translate(xf-xi, yf-yi);
+                xi = xf;
+                yi = yf;
+            }
+
+        }
         update();
     }
 }
@@ -110,12 +144,12 @@ void DrawZone::set_pen_color(){
                            Qt::green,	Qt::blue,	Qt::cyan,	Qt::magenta,
                            Qt::yellow,	Qt::darkRed,	Qt::darkGreen,	Qt::darkBlue,
                            Qt::darkCyan,	Qt::darkMagenta, Qt::darkYellow, Qt::transparent};
-    if(draw_mode)
+    if(draw_mode == 1)
         copy_pen.setColor(color_list[color_index]);
-    else{
+    else if (draw_mode == 0){
         if (!figures->isEmpty()){
             for (int i=0; i<figures->length(); i++){
-                if (figures->at(i).usedpath.intersects(select_area)){
+                if (figures->at(i).being_edited){
                     QPen *changing_pen = (QPen *) &figures->at(i).usedpen;
                     changing_pen->setColor(color_list[color_index]);
                 }
@@ -134,12 +168,12 @@ void DrawZone::set_pen_color(int new_color){
                            Qt::yellow,	Qt::darkRed,	Qt::darkGreen,	Qt::darkBlue,
                            Qt::darkCyan,	Qt::darkMagenta, Qt::darkYellow, Qt::transparent};
 
-    if(draw_mode)
+    if(draw_mode == 1)
         copy_pen.setColor(color_list[new_color]);
-    else{
+    else if (draw_mode == 0){
         if (!figures->isEmpty()){
             for (int i=0; i<figures->length(); i++){
-                if (figures->at(i).usedpath.intersects(select_area)){
+                if (figures->at(i).being_edited){
                     QPen *changing_pen = (QPen *) &figures->at(i).usedpen;
                     changing_pen->setColor(color_list[new_color]);
                 }
@@ -150,12 +184,12 @@ void DrawZone::set_pen_color(int new_color){
 }
 
 void DrawZone::set_pen_width_larger(){
-    if(draw_mode)
+    if(draw_mode == 1)
         copy_pen.setWidth(copy_pen.width() +1);
-    else{
+    else if (draw_mode == 0){
         if (!figures->isEmpty()){
             for (int i=0; i<figures->length(); i++){
-                if (figures->at(i).usedpath.intersects(select_area)){
+                if (figures->at(i).being_edited){
                     QPen *changing_pen = (QPen *) &figures->at(i).usedpen;
                     changing_pen->setWidth(changing_pen->width() +1);
                 }
@@ -166,15 +200,15 @@ void DrawZone::set_pen_width_larger(){
 }
 
 void DrawZone::set_pen_width_shorter(){
-    if(draw_mode)
+    if(draw_mode == 1)
         if(copy_pen.width() > 1){
             copy_pen.setWidth(copy_pen.width() -1);
         }
         else{}
-    else{
+    else if (draw_mode == 0){
         if (!figures->isEmpty()){
             for (int i=0; i<figures->length(); i++){
-                if (figures->at(i).usedpath.intersects(select_area)){
+                if (figures->at(i).being_edited){
                     QPen *changing_pen = (QPen *) &figures->at(i).usedpen;
                     if(changing_pen->width() > 1){
                         changing_pen->setWidth(changing_pen->width() -1);
@@ -190,12 +224,12 @@ void DrawZone::set_pen_style(){
     static int style_index = 0;
     Qt::PenStyle style_list[] = {Qt::SolidLine,	Qt::DashLine,	Qt::DotLine,
                                  Qt::DashDotLine,	Qt::DashDotDotLine,	Qt::CustomDashLine};
-    if(draw_mode)
+    if(draw_mode == 1)
         copy_pen.setStyle(style_list[style_index]);
-    else{
+    else if (draw_mode == 0){
         if (!figures->isEmpty()){
             for (int i=0; i<figures->length(); i++){
-                if (figures->at(i).usedpath.intersects(select_area)){
+                if (figures->at(i).being_edited){
                     QPen *changing_pen = (QPen *) &figures->at(i).usedpen;
                     changing_pen->setStyle(style_list[style_index]);
                 }
@@ -209,12 +243,12 @@ void DrawZone::set_pen_style(){
 void DrawZone::set_pen_style(int new_style){
     Qt::PenStyle style_list[] = {Qt::SolidLine,	Qt::DashLine,	Qt::DotLine,
                                  Qt::DashDotLine,	Qt::DashDotDotLine,	Qt::CustomDashLine};
-    if(draw_mode)
+    if(draw_mode == 1)
         copy_pen.setStyle(style_list[new_style]);
-    else{
+    else if (draw_mode == 0){
         if (!figures->isEmpty()){
             for (int i=0; i<figures->length(); i++){
-                if (figures->at(i).usedpath.intersects(select_area)){
+                if (figures->at(i).being_edited){
                     QPen *changing_pen = (QPen *) &figures->at(i).usedpen;
                     changing_pen->setStyle(style_list[new_style]);
                 }
@@ -232,6 +266,10 @@ void DrawZone::set_figure_form(){
 
 void DrawZone::set_figure_form(int new_form){
     figure_form = new_form;
+}
+
+void DrawZone::set_draw_mode_move(){
+    draw_mode = 2;
 }
 
 void DrawZone::set_draw_mode_paint(){

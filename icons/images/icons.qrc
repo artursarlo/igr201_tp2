@@ -9,5 +9,6 @@
         <file>save.png</file>
         <file>edit.png</file>
         <file>paint.png</file>
+        <file>move.png</file>
     </qresource>
 </RCC>
