@@ -6,6 +6,7 @@
 #include <QMouseEvent>
 #include <QLabel>
 #include <iostream>
+
 typedef struct{
     QPen usedpen;
     QPainterPath usedpath;

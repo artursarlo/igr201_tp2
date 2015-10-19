@@ -5,10 +5,12 @@ MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
 {
-    this->statusBar();
+    ui->setupUi(this);
+//    this->statusBar();
 
     // Adition of menu bar
-    QMenuBar * menuBar = this->menuBar();
+//    QMenuBar * menuBar = this->menuBar();
+    QMenuBar * menuBar = ui->menuBar;
     std::cout << "Menubar widget position: " << menuBar->pos().x() << "," << menuBar->pos().y() << std::endl;
 
     // Adition of submenu options
@@ -21,13 +23,14 @@ MainWindow::MainWindow(QWidget *parent) :
     QMenu * formMenu = menuBar->addMenu( tr ("&Form Settings") );
 
     // Adition of textbox at center
-    text = new QTextEdit(this);
-    setCentralWidget(text);
-    std::cout << "Text widget position: " << text->pos().x() << "," << text->pos().y() << std::endl;
+//    text = new QTextEdit(this);
+//    setCentralWidget(text);
+//    std::cout << "Text widget position: " << text->pos().x() << "," << text->pos().y() << std::endl;
 
     // Adition of DrawZone
-    mydrawzone = new DrawZone(this);
-    setCentralWidget(mydrawzone);
+//    mydrawzone = new DrawZone(this);
+    mydrawzone = ui->widget;
+//    setCentralWidget(mydrawzone);
     std::cout << "Drawzone widget position: " << mydrawzone->pos().x() << "," << mydrawzone->pos().y() << std::endl;
 
     // Declaration of Actions
@@ -123,7 +126,8 @@ MainWindow::MainWindow(QWidget *parent) :
     formMenu->addActions(group_form->actions());
 
 
-    QToolBar * toolbar = this->addToolBar(tr("ToolBar"));
+//    QToolBar * toolbar = this->addToolBar(tr("ToolBar"));
+    QToolBar * toolbar = ui->toolBar;
     toolbar->addAction(openAction);
     toolbar->addAction(saveAction);
     toolbar->addAction(quitAction);
@@ -145,6 +149,23 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(set_pen_style, SIGNAL(triggered( )), mydrawzone, SLOT(set_pen_style()));
     connect(set_figure_form, SIGNAL(triggered( )), mydrawzone, SLOT(set_figure_form()));
     connect(undo, SIGNAL(triggered( )), mydrawzone, SLOT(undo()));
+
+    QSlider *slider_color = ui->verticalSlider;
+    QSlider *slider_style = ui->verticalSlider_2;
+
+//    slider_color->setFocusPolicy(Qt::StrongFocus);
+    slider_color->setTickPosition(QSlider::TicksBothSides);
+    slider_color->setMinimum(0);
+    slider_color->setMaximum(17);
+    slider_color->setSingleStep(1);
+    connect(slider_color, SIGNAL(valueChanged(int)), this, SLOT(slide_color_pen_changed(int)));
+//    slider_color->addActions(group_color->actions());
+
+    slider_style->setTickPosition(QSlider::TicksBothSides);
+    slider_style->setMinimum(0);
+    slider_style->setMaximum(5);
+    slider_style->setSingleStep(1);
+    connect(slider_style, SIGNAL(valueChanged(int)), this, SLOT(slide_style_pen_changed(int)));
 
 }
 
@@ -215,6 +236,11 @@ void MainWindow::closeEvent(QCloseEvent *event){
     }
 }
 
+void MainWindow::slide_color_pen_changed(int color){
+ emit color_pen_changed(color);
+    std::cout << "Emit: " << color << std::endl;
+}
+
 void MainWindow::doIt(QAction *sender){
     if (sender == color0)
         emit color_pen_changed(0);
@@ -252,6 +278,11 @@ void MainWindow::doIt(QAction *sender){
         emit color_pen_changed(16);
     if (sender == color17)
         emit color_pen_changed(17);
+}
+
+void MainWindow::slide_style_pen_changed(int style){
+ emit style_pen_changed(style);
+    std::cout << "Emit: " << style << std::endl;
 }
 
 void MainWindow::doIt2(QAction *sender){

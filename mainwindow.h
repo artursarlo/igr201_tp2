@@ -21,10 +21,11 @@ class MainWindow : public QMainWindow
 public:
     explicit MainWindow(QWidget *parent = 0);
     void closeEvent(QCloseEvent *event);
+    Ui::MainWindow *ui;
     ~MainWindow();
 
 private:
-    Ui::MainWindow *ui;
+
     QTextEdit * text;
     DrawZone * mydrawzone;
     QAction *color0, *color1, *color2, *color3, *color4, *color5, *color6, *color7, *color8, *color9, *color10, *color11, *color12,
@@ -44,6 +45,8 @@ public slots:
     void doIt(QAction *sender);
     void doIt2(QAction *sender);
     void doIt3(QAction *sender);
+    void slide_color_pen_changed(int color);
+    void slide_style_pen_changed(int style);
 };
 
 #endif // MAINWINDOW_H
