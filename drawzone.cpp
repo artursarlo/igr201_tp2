@@ -3,7 +3,6 @@
 DrawZone::DrawZone(QWidget *parent) :
     QWidget(parent)
 {
-//    this->setMinimumSize(parent->size());
     figures = new QList<figuredraw>();
     connect(parent->parent()->parent(), SIGNAL(color_pen_changed(int)), this, SLOT(set_pen_color(int)));
     connect(parent->parent()->parent(), SIGNAL(style_pen_changed(int)), this, SLOT(set_pen_style(int)));
@@ -51,7 +50,6 @@ void DrawZone::paintEvent(QPaintEvent* e) {
 
 void DrawZone::mouseReleaseEvent(QMouseEvent* e){
     if (e->button() == Qt::LeftButton){
-        std::cout << "LeftButtonReleased!" << std::endl;
         if(draw_mode == 1){
             QPainterPath path;
             figuredraw newline;
@@ -59,7 +57,6 @@ void DrawZone::mouseReleaseEvent(QMouseEvent* e){
             case 0:
                 path.moveTo(xi, yi);
                 path.lineTo(xf, yf);
-//                path.closeSubpath();
                 newline.usedpath = path;
                 newline.usedpen = copy_pen;
                 newline.being_edited = 0;
@@ -67,18 +64,13 @@ void DrawZone::mouseReleaseEvent(QMouseEvent* e){
                 break;
             case 1:
                 path.addRect(xi,yi, xf-xi, yf-yi);
-//                path.closeSubpath();
                 newline.usedpath = path;
                 newline.usedpen = copy_pen;
                 newline.being_edited = 0;
                 figures->append(newline);
                 break;
             case 2:
-//                path.moveTo(xf, yi + (yf-yi)/2.0);
-//                path.arcTo(xi, yi, xf-xi, yf-yi, 0.0, 360.0);
                 path.addEllipse(xi,yi, xf-xi, yf-yi);
-//                path.closeSubpath();
-//                path.addEllipse(QRect(xi,yi, xf-xi, yf-yi));
                 newline.usedpath = path;
                 newline.usedpen = copy_pen;
                 newline.being_edited = 0;
@@ -107,7 +99,6 @@ void DrawZone::mouseReleaseEvent(QMouseEvent* e){
 
 void DrawZone::mousePressEvent(QMouseEvent* e){
     if (e->button() == Qt::LeftButton){
-        std::cout << "LeftButtonClicked!" << std::endl;
         xi = e->pos().x();
         yi = e->pos().y();
         ismoving = 1;
@@ -127,7 +118,6 @@ void DrawZone::mouseMoveEvent(QMouseEvent* e){
 
                     }
                 }
-//                select_area.translate(xf-xi, yf-yi);
                 xi = xf;
                 yi = yf;
             }
@@ -161,7 +151,6 @@ void DrawZone::set_pen_color(){
 }
 
 void DrawZone::set_pen_color(int new_color){
-    std::cout << "Cheguei aqui" << std::endl;
     QColor color_list[] = {Qt::black,	Qt::white,
                            Qt::darkGray,	Qt::gray,	Qt::lightGray,	Qt::red,
                            Qt::green,	Qt::blue,	Qt::cyan,	Qt::magenta,
@@ -290,10 +279,8 @@ void DrawZone::load_figures(QList<figuredraw> adress){
 }
 
 void DrawZone::undo(){
-    std::cout << "UNDO!" << std::endl;
     if (!figures->isEmpty()){
         figures->pop_back();
         update();
     }
 }
-

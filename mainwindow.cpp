@@ -6,12 +6,9 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-//    this->statusBar();
 
     // Adition of menu bar
-//    QMenuBar * menuBar = this->menuBar();
     QMenuBar * menuBar = ui->menuBar;
-    std::cout << "Menubar widget position: " << menuBar->pos().x() << "," << menuBar->pos().y() << std::endl;
 
     // Adition of submenu options
     QMenu * openMenu = menuBar->addMenu( tr ("&Open") );
@@ -22,16 +19,8 @@ MainWindow::MainWindow(QWidget *parent) :
     QMenu * styleMenu = menuBar->addMenu( tr ("&Style Settings") );
     QMenu * formMenu = menuBar->addMenu( tr ("&Form Settings") );
 
-    // Adition of textbox at center
-//    text = new QTextEdit(this);
-//    setCentralWidget(text);
-//    std::cout << "Text widget position: " << text->pos().x() << "," << text->pos().y() << std::endl;
-
     // Adition of DrawZone
-//    mydrawzone = new DrawZone(this);
     mydrawzone = ui->widget;
-//    setCentralWidget(mydrawzone);
-    std::cout << "Drawzone widget position: " << mydrawzone->pos().x() << "," << mydrawzone->pos().y() << std::endl;
 
     // Declaration of Actions
     QAction * openAction = new QAction( QIcon(":/icons/open.png"), tr("&Open"), this);
@@ -125,8 +114,6 @@ MainWindow::MainWindow(QWidget *parent) :
     formMenu->addAction(set_figure_form);
     formMenu->addActions(group_form->actions());
 
-
-//    QToolBar * toolbar = this->addToolBar(tr("ToolBar"));
     QToolBar * toolbar = ui->toolBar;
     toolbar->addAction(openAction);
     toolbar->addAction(saveAction);
@@ -153,13 +140,11 @@ MainWindow::MainWindow(QWidget *parent) :
     QSlider *slider_color = ui->verticalSlider;
     QSlider *slider_style = ui->verticalSlider_2;
 
-//    slider_color->setFocusPolicy(Qt::StrongFocus);
     slider_color->setTickPosition(QSlider::TicksBothSides);
     slider_color->setMinimum(0);
     slider_color->setMaximum(17);
     slider_color->setSingleStep(1);
     connect(slider_color, SIGNAL(valueChanged(int)), this, SLOT(slide_color_pen_changed(int)));
-//    slider_color->addActions(group_color->actions());
 
     slider_style->setTickPosition(QSlider::TicksBothSides);
     slider_style->setMinimum(0);
@@ -182,17 +167,13 @@ void MainWindow::openFile(){
         QPen pen;
         QPainterPath path;
         stream >> pen >> path;
-//        stream >> path;
         new_figure.usedpen = pen;
         new_figure.usedpath = path;
         new_figure.being_edited = 0;
-        std::cout << "Read one line" << std::endl;
         content.append(new_figure);
-        std::cout << "Successfull append" << std::endl;
     }
     mydrawzone->load_figures(content);
     update();
-    std::cout << "Open File Request for path: " << qPrintable(fileName) << std::endl;
 }
 
 void MainWindow::saveFile(){
@@ -210,14 +191,11 @@ void MainWindow::saveFile(){
         stream << new_figure.usedpen;
         stream << new_figure.usedpath;
     }
-    std::cout << "Save File Request for path: " << qPrintable(fileName) << std::endl;
 }
 
 void MainWindow::quitApp(){
     QMessageBox::StandardButton reply;
     reply = QMessageBox::question(this, "Application Exit", "Quit?", QMessageBox::Yes|QMessageBox::No);
-    std::cout << "Quit App Request!" << std::endl;
-
     if (reply == QMessageBox::Yes) {
         QApplication::quit();
     }
@@ -226,8 +204,6 @@ void MainWindow::quitApp(){
 void MainWindow::closeEvent(QCloseEvent *event){
     QMessageBox::StandardButton reply;
     reply = QMessageBox::question(this, "Application Exit", "Quit?", QMessageBox::Yes|QMessageBox::No);
-    std::cout << "Quit App Request!" << std::endl;
-
     if (reply == QMessageBox::Yes) {
         event->accept();
     }
@@ -238,7 +214,6 @@ void MainWindow::closeEvent(QCloseEvent *event){
 
 void MainWindow::slide_color_pen_changed(int color){
  emit color_pen_changed(color);
-    std::cout << "Emit: " << color << std::endl;
 }
 
 void MainWindow::doIt(QAction *sender){
@@ -282,7 +257,6 @@ void MainWindow::doIt(QAction *sender){
 
 void MainWindow::slide_style_pen_changed(int style){
  emit style_pen_changed(style);
-    std::cout << "Emit: " << style << std::endl;
 }
 
 void MainWindow::doIt2(QAction *sender){
