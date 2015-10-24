@@ -3,25 +3,35 @@
 DrawZone::DrawZone(QWidget *parent) :
     QWidget(parent)
 {
+    // Effective creation of the figure list
+    // This is the main list used for storing the figures already drawn
+    // It uses a defined structure type that stores the used path an pen for each figure drawn
+    // This defined structure type ("figuredraw") stores the information about if the
+    // figure was selected or not at the selection mode
     figures = new QList<figuredraw>();
-    connect(parent->parent()->parent(), SIGNAL(color_pen_changed(int)), this, SLOT(set_pen_color(int)));
-    connect(parent->parent()->parent(), SIGNAL(style_pen_changed(int)), this, SLOT(set_pen_style(int)));
-    connect(parent->parent()->parent(), SIGNAL(form_painter_changed(int)), this, SLOT(set_figure_form(int)));
+    // Set the initial drawmode at painting mode
     draw_mode = 1;
+    // Set the initial figure form to be drawn at a line
     figure_form = 0;
 }
 
+// The paint event that is refreshed many times
+// The variable 'ismoving' is necessary to indicate to the paint event
+// whenever it was caled by a mouse operation or an action by shortcut for exemple
 void DrawZone::paintEvent(QPaintEvent* e) {
     QWidget::paintEvent(e);
     QPainter painter(this);
-
+    // Draw everything that is stored at the list if it isn't empty
     if (!figures->isEmpty()){
         for (int i=0; i<figures->length(); i++){
             painter.setPen(figures->at(i).usedpen);
             painter.drawPath(figures->at(i).usedpath);
         }
     }
-
+    // Depending on the draw_mode and figure_form, draw the correspondent shape of the form selected
+    // if the draw_mode is for painting, or a dashed rectangle if the draw mode is for selection.
+    // It gives a more responsive impression (since the figure will be added to the
+    // list just at the mouse release).
     switch (draw_mode){
     case 1:
         painter.setPen(copy_pen);
@@ -48,6 +58,9 @@ void DrawZone::paintEvent(QPaintEvent* e) {
     }
 }
 
+// If in the painting mode, add a new figure to the list.
+// If in the selection mode, change the selection attribute for each
+// figure intersecting the selection rectangle at the list.
 void DrawZone::mouseReleaseEvent(QMouseEvent* e){
     if (e->button() == Qt::LeftButton){
         if(draw_mode == 1){
@@ -97,6 +110,8 @@ void DrawZone::mouseReleaseEvent(QMouseEvent* e){
     }
 }
 
+// Update the initial position of the operation and change the
+// class variable responsable for indicating if we are doing a mouse operation
 void DrawZone::mousePressEvent(QMouseEvent* e){
     if (e->button() == Qt::LeftButton){
         xi = e->pos().x();
@@ -105,6 +120,9 @@ void DrawZone::mousePressEvent(QMouseEvent* e){
     }
 }
 
+// Update the final position of the operation.
+// If the draw_mode indicates movementation mode, then it
+// moves each figure inside the list to the direction of movement
 void DrawZone::mouseMoveEvent(QMouseEvent* e){
     if (ismoving){
         xf = e->pos().x();
@@ -127,6 +145,7 @@ void DrawZone::mouseMoveEvent(QMouseEvent* e){
     }
 }
 
+// Method to alternate color of the drawing pen or selected figures each time its called
 void DrawZone::set_pen_color(){
     static int color_index = 0;
     QColor color_list[] = {Qt::black,	Qt::white,
@@ -150,6 +169,7 @@ void DrawZone::set_pen_color(){
     color_index = (color_index +1)%(sizeof(color_list)/sizeof(QColor));
 }
 
+// Overcharged method to set color of the drawing pen or selected figures
 void DrawZone::set_pen_color(int new_color){
     QColor color_list[] = {Qt::black,	Qt::white,
                            Qt::darkGray,	Qt::gray,	Qt::lightGray,	Qt::red,
@@ -172,6 +192,7 @@ void DrawZone::set_pen_color(int new_color){
     update();
 }
 
+// Method to increment width of the drawing pen or selected figures each time its called
 void DrawZone::set_pen_width_larger(){
     if(draw_mode == 1)
         copy_pen.setWidth(copy_pen.width() +1);
@@ -188,6 +209,7 @@ void DrawZone::set_pen_width_larger(){
     update();
 }
 
+// Method to decrement width of the drawing pen or selected figures each time its called
 void DrawZone::set_pen_width_shorter(){
     if(draw_mode == 1)
         if(copy_pen.width() > 1){
@@ -209,6 +231,7 @@ void DrawZone::set_pen_width_shorter(){
     update();
 }
 
+// Method to alternate style of the drawing pen  or selected figures each time its called
 void DrawZone::set_pen_style(){
     static int style_index = 0;
     Qt::PenStyle style_list[] = {Qt::SolidLine,	Qt::DashLine,	Qt::DotLine,
@@ -229,6 +252,7 @@ void DrawZone::set_pen_style(){
     style_index = (style_index +1)%(sizeof(style_list)/sizeof(Qt::PenStyle));
 }
 
+// Overcharged method to set style of the drawing pen or selected figures
 void DrawZone::set_pen_style(int new_style){
     Qt::PenStyle style_list[] = {Qt::SolidLine,	Qt::DashLine,	Qt::DotLine,
                                  Qt::DashDotLine,	Qt::DashDotDotLine,	Qt::CustomDashLine};
@@ -247,16 +271,19 @@ void DrawZone::set_pen_style(int new_style){
     update();
 }
 
+// Method to alternate form of the drawing figure
 void DrawZone::set_figure_form(){
     static int current_form = 0;
     current_form = (current_form +1)%3;
     figure_form = current_form;
 }
 
+// Overcharged method to set form of the drawing figure
 void DrawZone::set_figure_form(int new_form){
     figure_form = new_form;
 }
 
+// Slots to set the draw_mode
 void DrawZone::set_draw_mode_move(){
     draw_mode = 2;
 }
@@ -266,18 +293,22 @@ void DrawZone::set_draw_mode_paint(){
 }
 
 void DrawZone::set_draw_mode_edit(){
+    std::cout << "Selection mode!!";
     draw_mode = 0;
 }
 
+// Method used for saving the current state of the drawzone
 void DrawZone::get_save_cord(QList<figuredraw> **adress, int *n_figures){
     *adress = figures;
     *n_figures = figures->count();
 }
 
+// Method used for loading a list of figures
 void DrawZone::load_figures(QList<figuredraw> adress){
     *figures = adress;
 }
 
+// Method used to erase the last element of the figure list
 void DrawZone::undo(){
     if (!figures->isEmpty()){
         figures->pop_back();
